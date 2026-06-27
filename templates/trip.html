@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HK Shipping - Step 2: Trip & Cargo Details</title>
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="/static/images/logo.jpg" alt="HK Shipping Logo" class="me-2 rounded bg-white p-1" style="height: 38px; width: auto; object-fit: contain;">
+                <span class="fw-bold">HK Shipping Pvt. Ltd.</span>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/booking/crm"><i class="bi bi-file-earmark-plus me-1"></i>Freight Booking</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard"><i class="bi bi-speedometer2 me-1"></i>Operations Dashboard</a>
+                    </li>
+                    <li class="nav-item dropdown ms-lg-3">
+                        <a class="btn btn-outline-light btn-sm dropdown-toggle py-2 px-3 fw-bold" href="#" id="roleDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i> Role: <span id="currentRoleDisplay">Customer</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="roleDropdown">
+                            <li><a class="dropdown-item fw-semibold" href="#" onclick="switchUserRole('Customer', 'customer_user')"><i class="bi bi-person me-2"></i>Customer</a></li>
+                            <li><a class="dropdown-item fw-semibold" href="#" onclick="switchUserRole('Accounts Staff', 'accounts_user')"><i class="bi bi-journal-check me-2"></i>Accounts Staff</a></li>
+                            <li><a class="dropdown-item fw-semibold" href="#" onclick="switchUserRole('Admin/Owner', 'admin_user')"><i class="bi bi-shield-lock me-2"></i>Admin/Owner</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Wizard Steps Header -->
+    <div class="container my-5">
+        
+        <!-- Progress Bar -->
+        <div class="row mb-5 justify-content-center">
+            <div class="col-lg-8">
+                <div class="card custom-card p-3 border-0 bg-white shadow-sm">
+                    <div class="d-flex justify-content-between text-center small fw-bold">
+                        <div class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Customer CRM</div>
+                        <div class="text-primary"><i class="bi bi-2-circle-fill me-1"></i>Route & Cargo</div>
+                        <div class="text-muted"><i class="bi bi-3-circle me-1"></i>Fleet & Driver</div>
+                        <div class="text-muted"><i class="bi bi-4-circle me-1"></i>Billing Accounts</div>
+                    </div>
+                    <div class="progress mt-2" style="height: 6px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card custom-card">
+                    <div class="card-header-navy">
+                        <i class="bi bi-geo-alt-fill me-2"></i>Step 2: Trip Operations & Cargo Details
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="tripForm" class="needs-validation" novalidate>
+                            
+                            <h5 class="fw-semibold text-secondary mb-3"><i class="bi bi-map me-2"></i>Route Information</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label for="pickup_location" class="form-label fw-medium">Pickup Location <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="pickup_location" placeholder="e.g. Tata Plant, Pune" required>
+                                    <div class="invalid-feedback">Pickup location is required.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="drop_location" class="form-label fw-medium">Drop Location <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="drop_location" placeholder="e.g. JNPT Port, Mumbai" required>
+                                    <div class="invalid-feedback">Drop location is required.</div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <h5 class="fw-semibold text-secondary mb-3"><i class="bi bi-box-seam me-2"></i>Cargo Details</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label for="goods_type" class="form-label fw-medium">Goods Type <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="goods_type" placeholder="e.g. Auto Parts" required>
+                                    <div class="invalid-feedback">Goods type is required.</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="weight" class="form-label fw-medium">Cargo Weight (Tons) <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" class="form-control" id="weight" placeholder="e.g. 12.5" required min="0.01">
+                                    <div class="invalid-feedback">Please enter weight.</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="preferred_date" class="form-label fw-medium">Dispatch Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="preferred_date" required>
+                                    <div class="invalid-feedback">Date is required.</div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <h5 class="fw-semibold text-secondary mb-3"><i class="bi bi-clock-history me-2"></i>Initial Trackers (Optional)</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="gps_checkpoint" class="form-label fw-medium">Current GPS Checkpoint</label>
+                                    <input type="text" class="form-control" id="gps_checkpoint" placeholder="e.g. Panvel Bypass">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="eta" class="form-label fw-medium">ETA Value</label>
+                                    <input type="text" class="form-control" id="eta" placeholder="e.g. 4 hours / Delivered">
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <!-- Navigation Buttons -->
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary px-4 py-2" id="backBtn">
+                                    <i class="bi bi-arrow-left me-1"></i> Back to CRM
+                                </button>
+                                <button type="submit" class="btn btn-primary px-5 py-2 fw-semibold">
+                                    Next: Fleet & Driver <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom Main JS -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

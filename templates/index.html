@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HK Shipping Private Limited - Home</title>
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="/static/css/style.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
+            color: white;
+            padding: 80px 0;
+            border-bottom: 5px solid var(--color-info);
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            box-shadow: var(--card-shadow);
+        }
+        .feature-icon {
+            font-size: 2.2rem;
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="/static/images/logo.jpg" alt="HK Shipping Logo" class="me-2 rounded bg-white p-1" style="height: 38px; width: auto; object-fit: contain;">
+                <span class="fw-bold">HK Shipping Pvt. Ltd.</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/booking/crm"><i class="bi bi-file-earmark-plus me-1"></i>Freight Booking</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard"><i class="bi bi-speedometer2 me-1"></i>Operations Dashboard</a>
+                    </li>
+                    <li class="nav-item dropdown ms-lg-3">
+                        <a class="btn btn-outline-light btn-sm dropdown-toggle py-2 px-3 fw-bold" href="#" id="roleDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i> Role: <span id="currentRoleDisplay">Customer</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="roleDropdown">
+                            <li><a class="dropdown-item fw-semibold" href="#" onclick="switchUserRole('Customer', 'customer_user')"><i class="bi bi-person me-2"></i>Customer</a></li>
+                            <li><a class="dropdown-item fw-semibold" href="#" onclick="switchUserRole('Accounts Staff', 'accounts_user')"><i class="bi bi-journal-check me-2"></i>Accounts Staff</a></li>
+                            <li><a class="dropdown-item fw-semibold" href="#" onclick="switchUserRole('Admin/Owner', 'admin_user')"><i class="bi bi-shield-lock me-2"></i>Admin/Owner</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section text-center text-lg-start">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-7">
+                    <span class="badge bg-info mb-3 text-uppercase fw-bold px-3 py-2">Enterprise Logistics Portal</span>
+                    <h1 class="display-4 fw-extrabold text-white mb-3" style="font-weight: 800;">HK Shipping Private Limited</h1>
+                    <p class="lead text-white-50 mb-4 fs-5">Seamless Road Freight Logistics, Real-time Invoicing, GPS Tracking updates, and Automated Asset Compliance tracking in one unified interface.</p>
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+                        <a href="/booking/crm" class="btn btn-info btn-lg px-4 py-3 fw-bold text-white shadow">
+                            <i class="bi bi-plus-circle-fill me-2"></i>Start Freight Booking
+                        </a>
+                        <a href="/dashboard" class="btn btn-outline-light btn-lg px-4 py-3 fw-bold">
+                            <i class="bi bi-speedometer2 me-2"></i>View Operations Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-5 text-center d-none d-lg-block">
+                    <i class="bi bi-truck-front text-white" style="font-size: 15rem; opacity: 0.85;"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content / Service Selection Grid -->
+    <div class="container my-5 py-4">
+        
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold text-navy">Integrated Fleet Management Modules</h2>
+                <p class="text-muted">Explore the key modules designed to handle logistics, routes, and accounts.</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            
+            <!-- CRM Card -->
+            <div class="col-md-3">
+                <div class="card custom-card h-100 p-4 border-0">
+                    <div class="card-body p-0">
+                        <div class="feature-icon"><i class="bi bi-person-rolodex"></i></div>
+                        <h4 class="fw-bold mb-2">Customer CRM</h4>
+                        <p class="text-muted small">Manage client shipping profiles, billing details, and customer logistics contacts.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trip Operations Card -->
+            <div class="col-md-3">
+                <div class="card custom-card h-100 p-4 border-0">
+                    <div class="card-body p-0">
+                        <div class="feature-icon"><i class="bi bi-geo-alt-fill text-success"></i></div>
+                        <h4 class="fw-bold mb-2">Trip & Cargo</h4>
+                        <p class="text-muted small">Coordinate sources, drop destinations, cargo weight, preferred dates, and tracking.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fleet Assignment Card -->
+            <div class="col-md-3">
+                <div class="card custom-card h-100 p-4 border-0">
+                    <div class="card-body p-0">
+                        <div class="feature-icon"><i class="bi bi-shield-check text-info"></i></div>
+                        <h4 class="fw-bold mb-2">Fleet Assets</h4>
+                        <p class="text-muted small">Track driver assignments, license updates, insurance plans, and permit expirations.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoicing Card -->
+            <div class="col-md-3">
+                <div class="card custom-card h-100 p-4 border-0">
+                    <div class="card-body p-0">
+                        <div class="feature-icon"><i class="bi bi-currency-rupee text-warning"></i></div>
+                        <h4 class="fw-bold mb-2">Accounts</h4>
+                        <p class="text-muted small">Compute freight bills, GST percentage additions, advance logs, and balance collection tracking.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white-50 text-center py-4 mt-5">
+        <div class="container">
+            <p class="mb-0 small">&copy; 2026 HK Shipping Private Limited. All Rights Reserved. Enterprise Portal v2.0.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom Main JS -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
