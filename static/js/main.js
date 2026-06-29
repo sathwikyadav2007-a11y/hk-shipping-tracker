@@ -1,5 +1,22 @@
 // HK Shipping Private Limited - Frontend JS Logic & Wizard Management
 
+// Authentication & Page Access Guards
+(function() {
+    const isPublicPage = window.location.pathname === '/' || window.location.pathname === '/login';
+    if (!isPublicPage && !localStorage.getItem('hks_auth_token')) {
+        window.location.href = '/login';
+    }
+})();
+
+// Global Logout Function
+window.logoutUser = function() {
+    localStorage.removeItem('hks_auth_token');
+    localStorage.removeItem('hks_user_role');
+    localStorage.removeItem('hks_user_username');
+    localStorage.removeItem('hks_user_email');
+    window.location.href = '/login';
+}
+
 // Global Role Switcher Function
 window.switchUserRole = function(role, username) {
     localStorage.setItem('hks_user_role', role);
@@ -16,9 +33,16 @@ window.fetch = function(url, options = {}) {
     const role = localStorage.getItem('hks_user_role') || 'Customer';
     const username = localStorage.getItem('hks_user_username') || 'customer_user';
     
-    // Set headers
-    options.headers['X-User-Role'] = role;
-    options.headers['X-User-Username'] = username;
+    if (options.headers instanceof Headers) {
+        options.headers.set('X-User-Role', role);
+        options.headers.set('X-User-Username', username);
+    } else if (Array.isArray(options.headers)) {
+        options.headers.push(['X-User-Role', role]);
+        options.headers.push(['X-User-Username', username]);
+    } else if (typeof options.headers === 'object') {
+        options.headers['X-User-Role'] = role;
+        options.headers['X-User-Username'] = username;
+    }
     
     return originalFetch(url, options);
 };
@@ -129,6 +153,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeUsername = localStorage.getItem('hks_user_username') || 'customer_user';
     localStorage.setItem('hks_user_role', activeRole);
     localStorage.setItem('hks_user_username', activeUsername);
+
+    // Inject Logout option dynamically into the role switcher dropdown
+    const dropdownMenus = document.querySelectorAll('.dropdown-menu');
+    dropdownMenus.forEach(menu => {
+        if (menu.innerHTML.includes('switchUserRole') && !menu.innerHTML.includes('logoutUser')) {
+            const divider = document.createElement('li');
+            divider.innerHTML = '<hr class="dropdown-divider">';
+            const logoutItem = document.createElement('li');
+            logoutItem.innerHTML = '<a class="dropdown-item fw-bold text-danger" href="#" onclick="logoutUser()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>';
+            menu.appendChild(divider);
+            menu.appendChild(logoutItem);
+        }
+    });
 
     const displaySpan = document.getElementById('currentRoleDisplay');
     if (displaySpan) {
@@ -335,184 +372,191 @@ function setupFleetStep() {
  * Step 4: Accounts, Invoicing & Submission Page
  */
 function setupAccountsStep() {
-    const form = document.getElementById('accountsForm');
-    const backBtn = document.getElementById('backBtn');
-    
-    const freightInput = document.getElementById('freight_charges');
-    const gstRateSelect = document.getElementById('gst_rate');
-    const gstAmountInput = document.getElementById('gst_amount');
-    const advanceInput = document.getElementById('advance_payment');
-    const balanceInput = document.getElementById('balance_payment');
-    const statusSelect = document.getElementById('payment_status');
-    const dueDateInput = document.getElementById('due_date');
-
-    // Pre-populate
-    freightInput.value = getStepData('freight_charges');
-    gstRateSelect.value = getStepData('gst_rate') || '5';
-    advanceInput.value = getStepData('advance_payment');
-    statusSelect.value = getStepData('payment_status') || 'Pending';
-    dueDateInput.value = getStepData('due_date');
-
-    // Lock down billing parameters for Customer
-    const activeRole = localStorage.getItem('hks_user_role') || 'Customer';
-    if (activeRole === 'Customer') {
-        freightInput.disabled = true;
-        gstRateSelect.disabled = true;
-        advanceInput.disabled = true;
-        statusSelect.disabled = true;
-        dueDateInput.disabled = true;
+    try {
+        const form = document.getElementById('accountsForm');
+        const backBtn = document.getElementById('backBtn');
         
-        freightInput.value = '0.00';
-        gstRateSelect.value = '5';
-        gstAmountInput.value = '0.00';
-        advanceInput.value = '0.00';
-        balanceInput.value = '0.00';
-        statusSelect.value = 'Pending';
-        dueDateInput.value = '';
+        const freightInput = document.getElementById('freight_charges');
+        const gstRateSelect = document.getElementById('gst_rate');
+        const gstAmountInput = document.getElementById('gst_amount');
+        const advanceInput = document.getElementById('advance_payment');
+        const balanceInput = document.getElementById('balance_payment');
+        const statusSelect = document.getElementById('payment_status');
+        const dueDateInput = document.getElementById('due_date');
 
-        const headerEl = document.querySelector('.card-header-navy');
-        if (headerEl) {
-            headerEl.innerHTML = '<i class="bi bi-file-earmark-text me-2"></i>Step 4: Review & Submit Booking Request';
-        }
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Submit Booking Request';
-        }
-    }
+        // Pre-populate
+        freightInput.value = getStepData('freight_charges');
+        gstRateSelect.value = getStepData('gst_rate') || '5';
+        advanceInput.value = getStepData('advance_payment');
+        statusSelect.value = getStepData('payment_status') || 'Pending';
+        dueDateInput.value = getStepData('due_date');
 
-    // Calculation function
-    function calculatePayments() {
-        const freight = parseFloat(freightInput.value) || 0;
-        const gstRate = parseFloat(gstRateSelect.value) || 0;
-        
-        const gstAmount = parseFloat((freight * (gstRate / 100)).toFixed(2));
-        gstAmountInput.value = gstAmount;
-
-        const advance = parseFloat(advanceInput.value) || 0;
-        const balance = parseFloat((freight + gstAmount - advance).toFixed(2));
-        
-        balanceInput.value = balance;
-    }
-
-    // Attach listeners
-    freightInput.addEventListener('input', calculatePayments);
-    gstRateSelect.addEventListener('change', calculatePayments);
-    advanceInput.addEventListener('input', calculatePayments);
-
-    // Initial calculation in case fields are pre-populated
-    calculatePayments();
-
-    // Navigation Back
-    if (backBtn) {
-        backBtn.addEventListener('click', () => {
-            saveStepData({
-                freight_charges: freightInput.value,
-                gst_rate: gstRateSelect.value,
-                advance_payment: advanceInput.value,
-                payment_status: statusSelect.value,
-                due_date: dueDateInput.value
-            });
-            window.location.href = '/booking/fleet';
-        });
-    }
-
-    // Final Wizard Submission Handler
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        if (!form.checkValidity()) {
-            e.stopPropagation();
-            form.classList.add('was-validated');
-            return;
-        }
-
-        // Disable submit button during fetch
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
-
-        // Gather all stored wizard parameters
-        const fullPayload = {
-            customer_name: getStepData('customer_name'),
-            customer_email: getStepData('customer_email'),
-            customer_phone: getStepData('customer_phone'),
+        // Lock down billing parameters for Customer
+        const activeRole = localStorage.getItem('hks_user_role') || 'Customer';
+        if (activeRole === 'Customer') {
+            freightInput.disabled = true;
+            freightInput.removeAttribute('required');
+            freightInput.removeAttribute('min');
+            gstRateSelect.disabled = true;
+            advanceInput.disabled = true;
+            statusSelect.disabled = true;
+            dueDateInput.disabled = true;
             
-            pickup_location: getStepData('pickup_location'),
-            drop_location: getStepData('drop_location'),
-            goods_type: getStepData('goods_type'),
-            weight: parseFloat(getStepData('weight')) || 0.0,
-            preferred_date: getStepData('preferred_date'),
-            gps_checkpoint: getStepData('gps_checkpoint'),
-            eta: getStepData('eta'),
+            freightInput.value = '0.00';
+            gstRateSelect.value = '5';
+            gstAmountInput.value = '0.00';
+            advanceInput.value = '0.00';
+            balanceInput.value = '0.00';
+            statusSelect.value = 'Pending';
+            dueDateInput.value = '';
 
-            vehicle_number: getStepData('vehicle_number'),
-            vehicle_type: getStepData('vehicle_type'),
-            capacity_tons: parseFloat(getStepData('capacity_tons')) || 0.0,
-            insurance_expiry: getStepData('insurance_expiry'),
-            permit_expiry: getStepData('permit_expiry'),
-            maintenance_status: getStepData('maintenance_status') || 'Fit',
-
-            driver_name: getStepData('driver_name'),
-            driver_phone: getStepData('driver_phone'),
-            license_number: getStepData('license_number'),
-            license_expiry: getStepData('license_expiry'),
-
-            pod_photo_url: getStepData('pod_photo_url'),
-            receiver_signature: getStepData('receiver_signature'),
-
-            freight_charges: parseFloat(freightInput.value) || 0.0,
-            gst_rate: parseFloat(gstRateSelect.value) || 0.0,
-            gst_amount: parseFloat(gstAmountInput.value) || 0.0,
-            advance_payment: parseFloat(advanceInput.value) || 0.0,
-            balance_payment: parseFloat(balanceInput.value) || 0.0,
-            payment_status: statusSelect.value,
-            due_date: dueDateInput.value
-        };
-
-        // Check if any critical parameters from earlier steps were lost
-        const missingFields = [];
-        if (!fullPayload.customer_name) missingFields.push('Customer Name (Step 1)');
-        if (!fullPayload.pickup_location) missingFields.push('Pickup Location (Step 2)');
-        if (!fullPayload.vehicle_number) missingFields.push('Vehicle Number (Step 3)');
-        if (!fullPayload.driver_name) missingFields.push('Driver Name (Step 3)');
-
-        if (missingFields.length > 0) {
-            showNotification('danger', 'Form data from previous steps is missing. Please navigate back and check inputs: ' + missingFields.join(', '));
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
-            return;
+            const headerEl = document.querySelector('.card-header-navy');
+            if (headerEl) {
+                headerEl.innerHTML = '<i class="bi bi-file-earmark-text me-2"></i>Step 4: Review & Submit Booking Request';
+            }
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Submit Booking Request';
+            }
         }
 
-        try {
-            const response = await fetch('/api/invoices', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(fullPayload)
+        // Calculation function
+        function calculatePayments() {
+            const freight = parseFloat(freightInput.value) || 0;
+            const gstRate = parseFloat(gstRateSelect.value) || 0;
+            
+            const gstAmount = parseFloat((freight * (gstRate / 100)).toFixed(2));
+            gstAmountInput.value = gstAmount;
+
+            const advance = parseFloat(advanceInput.value) || 0;
+            const balance = parseFloat((freight + gstAmount - advance).toFixed(2));
+            
+            balanceInput.value = balance;
+        }
+
+        // Attach listeners
+        freightInput.addEventListener('input', calculatePayments);
+        gstRateSelect.addEventListener('change', calculatePayments);
+        advanceInput.addEventListener('input', calculatePayments);
+
+        // Initial calculation in case fields are pre-populated
+        calculatePayments();
+
+        // Navigation Back
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                saveStepData({
+                    freight_charges: freightInput.value,
+                    gst_rate: gstRateSelect.value,
+                    advance_payment: advanceInput.value,
+                    payment_status: statusSelect.value,
+                    due_date: dueDateInput.value
+                });
+                window.location.href = '/booking/fleet';
             });
+        }
 
-            const result = await response.json();
+        // Final Wizard Submission Handler
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-            if (!response.ok) {
-                throw new Error(result.error || result.details || 'Failed to complete shipment booking.');
+            if (!form.checkValidity()) {
+                e.stopPropagation();
+                form.classList.add('was-validated');
+                return;
             }
 
-            // Clear sessionStorage on success
-            clearWizardSession();
+            // Disable submit button during fetch
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
 
-            // Redirect to dashboard with success query param or notification
-            alert('Booking created successfully! Invoice ID: #INV-' + result.invoice_id);
-            window.location.href = '/dashboard';
+            // Gather all stored wizard parameters
+            const fullPayload = {
+                customer_name: getStepData('customer_name'),
+                customer_email: getStepData('customer_email'),
+                customer_phone: getStepData('customer_phone'),
+                
+                pickup_location: getStepData('pickup_location'),
+                drop_location: getStepData('drop_location'),
+                goods_type: getStepData('goods_type'),
+                weight: parseFloat(getStepData('weight')) || 0.0,
+                preferred_date: getStepData('preferred_date'),
+                gps_checkpoint: getStepData('gps_checkpoint'),
+                eta: getStepData('eta'),
 
-        } catch (err) {
-            console.error('Final Submission Error:', err);
-            showNotification('danger', err.message);
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
-        }
-    });
+                vehicle_number: getStepData('vehicle_number'),
+                vehicle_type: getStepData('vehicle_type'),
+                capacity_tons: parseFloat(getStepData('capacity_tons')) || 0.0,
+                insurance_expiry: getStepData('insurance_expiry'),
+                permit_expiry: getStepData('permit_expiry'),
+                maintenance_status: getStepData('maintenance_status') || 'Fit',
+
+                driver_name: getStepData('driver_name'),
+                driver_phone: getStepData('driver_phone'),
+                license_number: getStepData('license_number'),
+                license_expiry: getStepData('license_expiry'),
+
+                pod_photo_url: getStepData('pod_photo_url'),
+                receiver_signature: getStepData('receiver_signature'),
+
+                freight_charges: parseFloat(freightInput.value) || 0.0,
+                gst_rate: parseFloat(gstRateSelect.value) || 0.0,
+                gst_amount: parseFloat(gstAmountInput.value) || 0.0,
+                advance_payment: parseFloat(advanceInput.value) || 0.0,
+                balance_payment: parseFloat(balanceInput.value) || 0.0,
+                payment_status: statusSelect.value,
+                due_date: dueDateInput.value
+            };
+
+            // Check if any critical parameters from earlier steps were lost
+            const missingFields = [];
+            if (!fullPayload.customer_name) missingFields.push('Customer Name (Step 1)');
+            if (!fullPayload.pickup_location) missingFields.push('Pickup Location (Step 2)');
+            if (!fullPayload.vehicle_number) missingFields.push('Vehicle Number (Step 3)');
+            if (!fullPayload.driver_name) missingFields.push('Driver Name (Step 3)');
+
+            if (missingFields.length > 0) {
+                showNotification('danger', 'Form data from previous steps is missing. Please navigate back and check inputs: ' + missingFields.join(', '));
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/invoices', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(fullPayload)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || result.details || 'Failed to complete shipment booking.');
+                }
+
+                // Clear sessionStorage on success
+                clearWizardSession();
+
+                // Redirect to dashboard with success query param or notification
+                alert('Booking created successfully! Invoice ID: #INV-' + result.invoice_id);
+                window.location.href = '/dashboard';
+
+            } catch (err) {
+                console.error('Final Submission Error:', err);
+                showNotification('danger', err.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+    } catch (err) {
+        console.error("setupAccountsStep error:", err);
+        alert("setupAccountsStep script error: " + err.message + "\nStack: " + err.stack);
+    }
 }
 
 /**

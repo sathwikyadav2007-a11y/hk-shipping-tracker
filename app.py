@@ -993,6 +993,55 @@ def detail_page(invoice_id):
     """Renders the detailed consignment tracking and AI analysis page."""
     return render_template('detail.html', invoice_id=invoice_id)
 
+from itsdangerous import URLSafeSerializer
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'hk-shipping-secret-key-2026')
+
+@app.route('/login')
+def login_page():
+    """Renders the modern premium SaaS login page."""
+    return render_template('login.html')
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    """
+    POST /api/login
+    Authenticates email and password, returning a signed token and user role payload.
+    """
+    try:
+        data = request.get_json() or {}
+        email = data.get('email', '').strip()
+        password = data.get('password', '').strip()
+        
+        # Test Credentials Database
+        user_db = {
+            'admin@hkshipping.com': {'password': 'admin123', 'role': 'Admin/Owner', 'username': 'admin_user'},
+            'staff@hkshipping.com': {'password': 'staff123', 'role': 'Accounts Staff', 'username': 'accounts_user'},
+            'customer@hkshipping.com': {'password': 'customer123', 'role': 'Customer', 'username': 'customer_user'},
+            'sathwikyadav2007@gmail.com': {'password': 'hkshipping2026', 'role': 'Admin/Owner', 'username': 'sathwik_admin'}
+        }
+        
+        if email not in user_db or user_db[email]['password'] != password:
+            return jsonify({'error': 'Invalid email or password'}), 401
+            
+        user = user_db[email]
+        role = user['role']
+        username = user['username']
+        
+        # Generate securely signed token holding email and role
+        serializer = URLSafeSerializer(app.config['SECRET_KEY'])
+        token = serializer.dumps({'email': email, 'role': role})
+        
+        return jsonify({
+            'success': True,
+            'token': token,
+            'role': role,
+            'username': username,
+            'email': email
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': 'Server Error during login', 'details': str(e)}), 500
+
 
 if __name__ == '__main__':
     # Support both local and cloud deployments

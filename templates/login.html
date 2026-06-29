@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HK Shipping - Enterprise Login</title>
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & Babel CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#3B82F6',
+                        accent: '#60A5FA',
+                        darkBg: '#0F172A',
+                        darkCard: 'rgba(30, 41, 59, 0.7)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS Keyframes & Animations -->
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+        }
+        @keyframes float-reverse {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(15px) rotate(-3deg); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.9; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        .animate-float-rev {
+            animation: float-reverse 7s ease-in-out infinite;
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 4s ease-in-out infinite;
+        }
+        .animate-shake {
+            animation: shake 0.3s ease-in-out;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.5);
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-800 dark:bg-[#090d16] dark:text-slate-100 transition-colors duration-300 overflow-x-hidden">
+
+    <!-- React App Root Container -->
+    <div id="root" class="h-full"></div>
+
+    <!-- React Login Component -->
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Custom Icon Components using SVGs for premium rendering
+        const Icons = {
+            Mail: () => (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            ),
+            Lock: () => (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 11V7a5 5 0 0110 0v4" />
+                </svg>
+            ),
+            Eye: () => (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+            ),
+            EyeOff: () => (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88L1 1m22 22L12 12" />
+                </svg>
+            ),
+            Shield: () => (
+                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            ),
+            Sun: () => (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-3.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                </svg>
+            ),
+            Moon: () => (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            ),
+            Loader: () => (
+                <svg className="animate-spin h-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+            ),
+            Alert: () => (
+                <svg className="w-5 h-5 text-red-500 mr-2 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            ),
+            Google: () => (
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+            ),
+            Github: () => (
+                <svg className="w-5 h-5 mr-2 fill-current" viewBox="0 0 24 24">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.577.688.48C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+                </svg>
+            ),
+            Microsoft: () => (
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 23 23">
+                    <path fill="#f35325" d="M0 0h11v11H0z" />
+                    <path fill="#81bc06" d="M12 0h11v11H12z" />
+                    <path fill="#05a6f0" d="M0 12h11v11H0z" />
+                    <path fill="#ffba08" d="M12 12h11v11H12z" />
+                </svg>
+            )
+        };
+
+        function App() {
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [showPassword, setShowPassword] = useState(false);
+            const [rememberMe, setRememberMe] = useState(false);
+            const [isLoading, setIsLoading] = useState(false);
+            const [isSuccess, setIsSuccess] = useState(false);
+            
+            // Validation states
+            const [emailError, setEmailError] = useState('');
+            const [passwordError, setPasswordError] = useState('');
+            const [loginError, setLoginError] = useState('');
+            
+            // Warnings & Info
+            const [capsLockActive, setCapsLockActive] = useState(false);
+            const [passwordStrength, setPasswordStrength] = useState(0); // 0 to 4
+            
+            // Theme toggle
+            const [darkMode, setDarkMode] = useState(false);
+            const [isShaking, setIsShaking] = useState(false);
+
+            // Fetch theme on load
+            useEffect(() => {
+                const storedTheme = localStorage.getItem('hks_theme') === 'dark';
+                setDarkMode(storedTheme);
+                if (storedTheme) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+
+                // Check CapsLock on windows key press
+                const handleKeyDown = (e) => {
+                    if (e.getModifierState && e.getModifierState('CapsLock')) {
+                        setCapsLockActive(true);
+                    } else {
+                        setCapsLockActive(false);
+                    }
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                window.addEventListener('keyup', handleKeyDown);
+                return () => {
+                    window.removeEventListener('keydown', handleKeyDown);
+                    window.removeEventListener('keyup', handleKeyDown);
+                };
+            }, []);
+
+            // Toggle theme
+            const toggleTheme = () => {
+                const newMode = !darkMode;
+                setDarkMode(newMode);
+                localStorage.setItem('hks_theme', newMode ? 'dark' : 'light');
+                if (newMode) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            };
+
+            // Calculate password strength
+            useEffect(() => {
+                if (!password) {
+                    setPasswordStrength(0);
+                    return;
+                }
+                let strength = 0;
+                if (password.length >= 8) strength++; // length check
+                if (/[A-Z]/.test(password)) strength++; // uppercase check
+                if (/[0-9]/.test(password)) strength++; // number check
+                if (/[^A-Za-z0-9]/.test(password)) strength++; // special char check
+                setPasswordStrength(strength);
+            }, [password]);
+
+            const triggerCardShake = () => {
+                setIsShaking(true);
+                setTimeout(() => setIsShaking(false), 300);
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                
+                // Reset Errors
+                setEmailError('');
+                setPasswordError('');
+                setLoginError('');
+                
+                let isValid = true;
+                if (!email) {
+                    setEmailError('Email address is required');
+                    isValid = false;
+                } else if (!/\S+@\S+\.\S+/.test(email)) {
+                    setEmailError('Please enter a valid email address');
+                    isValid = false;
+                }
+
+                if (!password) {
+                    setPasswordError('Password is required');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    triggerCardShake();
+                    return;
+                }
+
+                setIsLoading(true);
+
+                try {
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Invalid credentials');
+                    }
+
+                    // Success state
+                    setIsSuccess(true);
+                    
+                    // Set token and credentials
+                    localStorage.setItem('hks_auth_token', data.token);
+                    localStorage.setItem('hks_user_role', data.role);
+                    localStorage.setItem('hks_user_username', data.username);
+                    localStorage.setItem('hks_user_email', data.email);
+
+                    // Sync user switcher logic
+                    if (rememberMe) {
+                        localStorage.setItem('hks_remembered_email', email);
+                    } else {
+                        localStorage.removeItem('hks_remembered_email');
+                    }
+
+                    // Trigger smooth transition
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1200);
+
+                } catch (err) {
+                    setIsLoading(false);
+                    setLoginError(err.message);
+                    triggerCardShake();
+                }
+            };
+
+            return (
+                <div className="flex min-h-screen w-full transition-all duration-300">
+                    
+                    {/* Left Panel: Graphic & Taglines (Hidden on Mobile) */}
+                    <div className="hidden lg:flex lg:w-1/2 relative bg-slate-950 flex-col justify-between p-12 overflow-hidden select-none">
+                        
+                        {/* Background glowing rings */}
+                        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] animate-pulse-glow"></div>
+                        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary/15 rounded-full blur-[100px] animate-pulse-glow"></div>
+
+                        {/* Top Branding Section */}
+                        <div className="z-10 flex items-center gap-3">
+                            <div className="flex items-center justify-center bg-white/10 border border-white/20 p-2 rounded-xl backdrop-blur-md">
+                                <img src="/static/images/logo.jpg" alt="Logo" className="h-9 w-auto rounded object-contain bg-white p-0.5" />
+                            </div>
+                            <span className="font-extrabold text-white text-xl tracking-wide">HK SHIPPING</span>
+                        </div>
+
+                        {/* Interactive UI Mockup Illustration */}
+                        <div className="z-10 flex justify-center items-center my-auto">
+                            <div className="relative w-full max-w-[460px] p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl shadow-2xl animate-float">
+                                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
+                                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <span className="text-white/40 text-xs ml-auto font-mono">hk_shipping_v2.log</span>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="h-6 w-2/3 bg-white/10 rounded-md"></div>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="h-20 bg-primary/10 border border-primary/20 rounded-xl p-3 flex flex-col justify-between">
+                                            <span className="text-[10px] text-white/50 uppercase font-semibold">Active Fleets</span>
+                                            <span className="text-white font-extrabold text-xl">184</span>
+                                        </div>
+                                        <div className="h-20 bg-green-500/10 border border-green-500/20 rounded-xl p-3 flex flex-col justify-between">
+                                            <span className="text-[10px] text-white/50 uppercase font-semibold">Deliveries</span>
+                                            <span className="text-white font-extrabold text-xl">99.8%</span>
+                                        </div>
+                                        <div className="h-20 bg-orange-500/10 border border-orange-500/20 rounded-xl p-3 flex flex-col justify-between font-bold">
+                                            <span className="text-[10px] text-white/50 uppercase font-semibold">ETA Status</span>
+                                            <span className="text-orange-400 font-extrabold text-lg">Ontime</span>
+                                        </div>
+                                    </div>
+                                    <div className="h-32 bg-white/5 border border-white/10 rounded-xl p-3">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <span className="text-xs text-white/70 font-semibold">Freight Operations</span>
+                                            <span className="text-[10px] text-primary bg-primary/20 px-2 py-0.5 rounded-full font-bold">Live</span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="h-3 w-full bg-white/10 rounded"></div>
+                                            <div className="h-3 w-5/6 bg-white/10 rounded"></div>
+                                            <div className="h-3 w-4/6 bg-white/10 rounded"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bottom Text Taglines */}
+                        <div className="z-10">
+                            <h2 className="text-white font-extrabold text-3xl mb-2">Welcome to HK Shipping Enterprise</h2>
+                            <p className="text-slate-400 text-sm max-w-[480px] leading-relaxed">
+                                The standard for modern freight management, real-time tracking, and automated invoicing. Log in to access the dispatch dashboard, billing accounts, and AI operations panel.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    {/* Right Panel: Login Form Container */}
+                    <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 md:p-12 relative bg-slate-50 dark:bg-[#070b13] transition-colors duration-300">
+                        
+                        {/* Background floating blurs */}
+                        <div className="absolute top-10 right-10 w-80 h-80 bg-blue-500/5 rounded-full blur-[100px] animate-pulse-glow"></div>
+                        <div className="absolute bottom-10 left-10 w-96 h-96 bg-purple-500/5 rounded-full blur-[120px] animate-pulse-glow"></div>
+
+                        {/* Top Utility Nav: Dark Mode Toggle */}
+                        <div className="z-10 flex justify-end">
+                            <button 
+                                onClick={toggleTheme}
+                                className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:scale-105 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300"
+                                aria-label="Toggle Theme"
+                            >
+                                {darkMode ? <Icons.Sun /> : <Icons.Moon />}
+                            </button>
+                        </div>
+
+                        {/* Centered Login Card */}
+                        <div className="z-10 my-auto flex justify-center items-center w-full">
+                            <div 
+                                className={`w-full max-w-[450px] p-8 md:p-10 bg-white/70 dark:bg-slate-900/50 border border-white/30 dark:border-slate-800/80 rounded-2xl shadow-xl backdrop-blur-xl transition-all duration-300 ${isShaking ? 'animate-shake border-red-500/50' : ''}`}
+                            >
+                                {/* Mobile Header Logo */}
+                                <div className="lg:hidden flex items-center gap-3 mb-6 justify-center">
+                                    <img src="/static/images/logo.jpg" alt="Logo" className="h-8 w-auto rounded bg-white p-0.5" />
+                                    <span className="font-extrabold text-slate-900 dark:text-white text-lg tracking-wide">HK SHIPPING</span>
+                                </div>
+
+                                <div className="text-center md:text-left mb-6">
+                                    <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Access Portal</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm">Please log in to manage your freight bookings.</p>
+                                </div>
+
+                                {/* Server/Database Error Alert */}
+                                {loginError && (
+                                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center text-xs text-red-600 dark:text-red-400">
+                                        <Icons.Alert />
+                                        <span>{loginError}</span>
+                                    </div>
+                                )}
+
+                                {/* Success state */}
+                                {isSuccess && (
+                                    <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex flex-col items-center justify-center text-center space-y-2">
+                                        <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                        <h5 className="font-bold text-green-600 dark:text-green-400 text-sm">Authentication Granted</h5>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Redirecting to operations control...</p>
+                                    </div>
+                                )}
+
+                                <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                                    
+                                    {/* Email Field */}
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors duration-200">
+                                            <Icons.Mail />
+                                        </div>
+                                        <input 
+                                            type="email"
+                                            id="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className={`block w-full pl-11 pr-3 py-3 bg-slate-100/50 dark:bg-slate-950/40 border ${emailError ? 'border-red-500 focus:border-red-500' : 'border-slate-200 dark:border-slate-800 focus:border-primary'} rounded-xl focus:outline-none focus:ring-1 focus:ring-primary/20 text-slate-900 dark:text-white transition-all duration-200`}
+                                            placeholder="Email Address"
+                                        />
+                                        {emailError && <p className="text-red-500 text-[11px] mt-1 ml-1 font-medium">{emailError}</p>}
+                                    </div>
+
+                                    {/* Password Field */}
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors duration-200">
+                                            <Icons.Lock />
+                                        </div>
+                                        <input 
+                                            type={showPassword ? 'text' : 'password'}
+                                            id="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className={`block w-full pl-11 pr-11 py-3 bg-slate-100/50 dark:bg-slate-950/40 border ${passwordError ? 'border-red-500 focus:border-red-500' : 'border-slate-200 dark:border-slate-800 focus:border-primary'} rounded-xl focus:outline-none focus:ring-1 focus:ring-primary/20 text-slate-900 dark:text-white transition-all duration-200`}
+                                            placeholder="Password"
+                                        />
+                                        <button 
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                                        >
+                                            {showPassword ? <Icons.EyeOff /> : <Icons.Eye />}
+                                        </button>
+                                        {passwordError && <p className="text-red-500 text-[11px] mt-1 ml-1 font-medium">{passwordError}</p>}
+                                    </div>
+
+                                    {/* Caps Lock Indicator */}
+                                    {capsLockActive && (
+                                        <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center text-[10px] text-amber-600 dark:text-amber-400 font-semibold animate-pulse">
+                                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                            Caps Lock is active! Check password capitalization.
+                                        </div>
+                                    )}
+
+                                    {/* Password Strength Indicator */}
+                                    {password && (
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between items-center text-[10px] font-semibold text-slate-400">
+                                                <span>Strength Meter</span>
+                                                <span className={
+                                                    passwordStrength === 4 ? 'text-green-500' :
+                                                    passwordStrength >= 2 ? 'text-yellow-500' : 'text-red-500'
+                                                }>
+                                                    {passwordStrength === 4 ? 'Strong' :
+                                                     passwordStrength >= 2 ? 'Fair' : 'Weak'}
+                                                </span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden flex gap-0.5">
+                                                <div className={`h-full flex-1 rounded-l transition-all duration-300 ${passwordStrength >= 1 ? (passwordStrength === 4 ? 'bg-green-500' : passwordStrength >= 2 ? 'bg-yellow-500' : 'bg-red-500') : 'bg-transparent'}`}></div>
+                                                <div className={`h-full flex-1 transition-all duration-300 ${passwordStrength >= 2 ? (passwordStrength === 4 ? 'bg-green-500' : 'bg-yellow-500') : 'bg-transparent'}`}></div>
+                                                <div className={`h-full flex-1 transition-all duration-300 ${passwordStrength >= 3 ? (passwordStrength === 4 ? 'bg-green-500' : 'bg-yellow-500') : 'bg-transparent'}`}></div>
+                                                <div className={`h-full flex-1 rounded-r transition-all duration-300 ${passwordStrength === 4 ? 'bg-green-500' : 'bg-transparent'}`}></div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Remember Me & Forgot Password */}
+                                    <div className="flex items-center justify-between text-xs">
+                                        <label className="flex items-center space-x-2 text-slate-500 dark:text-slate-400 cursor-pointer select-none">
+                                            <input 
+                                                type="checkbox"
+                                                checked={rememberMe}
+                                                onChange={(e) => setRememberMe(e.target.checked)}
+                                                className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary dark:bg-slate-950/40"
+                                            />
+                                            <span>Keep me signed in</span>
+                                        </label>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); alert("Passcode Recovery Details: Demo passwords are 'admin123' for Admin, 'staff123' for Accounts, and 'customer123' for Customer."); }} className="text-primary dark:text-accent hover:underline font-semibold">Forgot Passcode?</a>
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <button 
+                                        type="submit"
+                                        disabled={isLoading || isSuccess}
+                                        className="relative w-full py-3 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:opacity-95 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 overflow-hidden group disabled:opacity-50"
+                                    >
+                                        {isLoading ? (
+                                            <Icons.Loader />
+                                        ) : (
+                                            <>
+                                                <span>Verify credentials & Login</span>
+                                                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                                </svg>
+                                            </>
+                                        )}
+                                    </button>
+
+                                    {/* Separator / Divider */}
+                                    <div className="relative flex items-center justify-center my-6">
+                                        <div className="absolute w-full border-t border-slate-200 dark:border-slate-800"></div>
+                                        <span className="relative px-3 bg-white dark:bg-slate-900 text-slate-400 text-xs font-semibold select-none">OR CONTINUE WITH</span>
+                                    </div>
+
+                                    {/* Social OAuth Buttons */}
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <button 
+                                            type="button"
+                                            onClick={() => alert("SSO Login API simulation triggered via Google Provider.")}
+                                            className="flex items-center justify-center py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-white/50 dark:bg-slate-950/20 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors duration-200"
+                                        >
+                                            <Icons.Google />
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            onClick={() => alert("SSO Login API simulation triggered via Microsoft Provider.")}
+                                            className="flex items-center justify-center py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-white/50 dark:bg-slate-950/20 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors duration-200"
+                                        >
+                                            <Icons.Microsoft />
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            onClick={() => alert("SSO Login API simulation triggered via GitHub Provider.")}
+                                            className="flex items-center justify-center py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-white/50 dark:bg-slate-950/20 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 transition-colors duration-200"
+                                        >
+                                            <Icons.Github />
+                                        </button>
+                                    </div>
+
+                                </form>
+
+                                {/* Footer Form Actions */}
+                                <div className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400">
+                                    New to HK Shipping?{' '}
+                                    <a href="#" onClick={(e) => { e.preventDefault(); alert("Enterprise Registration Desk: Please contact the System Administrator to provision new employee or client access keys."); }} className="text-primary dark:text-accent font-semibold hover:underline">Request Account Access</a>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {/* Footer Legal Links */}
+                        <div className="z-10 flex justify-between text-xs text-slate-400 border-t border-slate-200/50 dark:border-slate-800/30 pt-4 mt-6">
+                            <span>&copy; 2026 HK Shipping</span>
+                            <div className="flex gap-4">
+                                <a href="#" onClick={(e) => { e.preventDefault(); alert("Corporate Terms of Service policy is bound to service SLAs."); }} className="hover:underline">Terms</a>
+                                <a href="#" onClick={(e) => { e.preventDefault(); alert("Customer Data Privacy Statement: All actions are encrypted."); }} className="hover:underline">Privacy Policy</a>
+                                <a href="mailto:support@hkshipping.com" className="hover:underline">Support</a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
